@@ -23,33 +23,26 @@ A **verification-driven CSRF exploitation assistant** for VAPT teams and bug bou
 
 ## 📦 Installation
 
-### Option 1: pipx (Recommended)
+### Option 1: pip from PyPI (Easiest)
+```bash
+pip install sentinel-csrf
+```
+
+### Option 2: pipx (Recommended for CLI tools)
 ```bash
 # Install pipx if not already installed
 sudo apt install pipx
 pipx ensurepath
 
 # Install Sentinel-CSRF
-pipx install git+https://github.com/NI54NTH/sentinel-csrf.git
-
-# Or from local clone
-git clone https://github.com/NI54NTH/sentinel-csrf.git
-cd sentinel-csrf
-pipx install .
+pipx install sentinel-csrf
 ```
 
-### Option 2: pip with Virtual Environment
+### Option 3: From Source
 ```bash
 git clone https://github.com/NI54NTH/sentinel-csrf.git
 cd sentinel-csrf
-python3 -m venv .venv
-source .venv/bin/activate
 pip install -e .
-```
-
-### Option 3: Direct from GitHub
-```bash
-pip install git+https://github.com/NI54NTH/sentinel-csrf.git
 ```
 
 ### Verify Installation
@@ -320,6 +313,7 @@ Inputs are cached for quick reuse:
 
 ## 🔗 Links
 
+- **PyPI**: https://pypi.org/project/sentinel-csrf/
 - **Repository**: https://github.com/NI54NTH/sentinel-csrf
 - **Author**: N15H
 
