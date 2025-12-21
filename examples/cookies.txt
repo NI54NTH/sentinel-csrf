@@ -1,0 +1,7 @@
+# Netscape HTTP Cookie File
+# https://curl.se/docs/http-cookies.html
+# Example file for Sentinel-CSRF
+
+.example.com	TRUE	/	FALSE	0	session_id	abc123def456
+.example.com	TRUE	/	TRUE	0	auth_token	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+.example.com	TRUE	/api	FALSE	0	api_key	sk_test_1234567890

