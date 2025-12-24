@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sentinel-csrf"
-version = "1.0.0"
+version = "1.0.2"
 description = "A verification-driven CSRF exploitation assistant for VAPT teams"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "Sentinel-CSRF Team"}
+    {name = "N15H", email = "nisanthsmpupi@gmail.com"}
 ]
 keywords = ["csrf", "security", "vapt", "penetration-testing", "bug-bounty"]
 classifiers = [
@@ -40,9 +40,9 @@ dev = [
 sentinel-csrf = "sentinel_csrf.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/sentinel-csrf/sentinel-csrf"
-Documentation = "https://github.com/sentinel-csrf/sentinel-csrf#readme"
-Repository = "https://github.com/sentinel-csrf/sentinel-csrf"
+Homepage = "https://github.com/NI54NTH/sentinel-csrf"
+Documentation = "https://github.com/NI54NTH/sentinel-csrf#readme"
+Repository = "https://github.com/NI54NTH/sentinel-csrf"
 
 [tool.setuptools.packages.find]
 where = ["."]
