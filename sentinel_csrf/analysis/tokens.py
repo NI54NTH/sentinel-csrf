@@ -123,6 +123,17 @@ CSRF_HEADER_PATTERNS = [
     r'^x[-_]request[-_]token$',
 ]
 
+# Framework tokens that are trusted regardless of length
+# These are validated server-side by known frameworks
+TRUSTED_FRAMEWORK_TOKENS = [
+    'sesskey',               # Moodle
+    'authenticity_token',    # Rails
+    '__RequestVerificationToken',  # ASP.NET
+    'csrfmiddlewaretoken',   # Django
+    '_token',                # Laravel
+    '__csrf_magic',          # PHP CSRF Magic
+]
+
 # Entropy threshold for "high entropy" classification
 HIGH_ENTROPY_THRESHOLD = 3.5
 MIN_TOKEN_LENGTH = 16
@@ -317,6 +328,12 @@ class TokenAnalyzer:
     @classmethod
     def _assess_strength(cls, token: TokenCandidate) -> TokenStrength:
         """Assess the strength of a CSRF token."""
+        
+        # Trust known framework tokens regardless of length
+        token_name_lower = token.name.lower()
+        for trusted in TRUSTED_FRAMEWORK_TOKENS:
+            if token_name_lower == trusted.lower():
+                return TokenStrength.STRONG
         
         # Check length
         if token.length < 8:
