@@ -5,5 +5,5 @@ This package provides tools for identifying and verifying exploitable
 CSRF vulnerabilities in web applications.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.4"
 __author__ = "N15H"

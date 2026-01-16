@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sentinel-csrf"
-version = "1.0.3"
+version = "1.0.4"
 description = "A verification-driven CSRF exploitation assistant for VAPT teams"
 readme = "README.md"
 license = {text = "MIT"}
