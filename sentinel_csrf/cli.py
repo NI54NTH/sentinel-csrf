@@ -69,7 +69,7 @@ def create_parser() -> argparse.ArgumentParser:
     
     # Standalone --reuse-last flag (bypasses both groups)
     scan_parser.add_argument(
-        "--reuse-last",
+        "-L", "--reuse-last",
         action="store_true",
         help="Reuse both last cached request and cookies",
     )
@@ -82,7 +82,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to Netscape cookie file",
     )
     scan_parser.add_argument(
-        "--cookies-stdin",
+        "-C", "--cookies-stdin",
         action="store_true",
         help="Read cookies from STDIN (Ctrl+D to end)",
     )
@@ -100,7 +100,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to raw HTTP request file",
     )
     scan_parser.add_argument(
-        "--request-stdin",
+        "-R", "--request-stdin",
         action="store_true",
         help="Read raw HTTP request from STDIN (Ctrl+D to end)",
     )
@@ -225,7 +225,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to raw HTTP request file",
     )
     poc_gen_group.add_argument(
-        "--request-stdin",
+        "-R", "--request-stdin",
         action="store_true",
         help="Read raw HTTP request from STDIN",
     )
@@ -237,11 +237,11 @@ def create_parser() -> argparse.ArgumentParser:
         help="Output path for HTML PoC",
     )
     poc_gen_parser.add_argument(
-        "--vector",
+        "-v", "--vector",
         type=str,
         default="form_post",
         choices=["form_post", "form_get", "img_tag", "iframe", "fetch"],
-        help="Attack vector to use (default: form_post)",
+        help="Attack vector: form_post, form_get, img_tag, iframe, fetch (default: form_post)",
     )
     
     # poc serve
