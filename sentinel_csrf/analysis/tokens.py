@@ -100,6 +100,11 @@ CSRF_TOKEN_PATTERNS = [
     r'^__csrf_magic$',  # PHP CSRF Magic
     r'^form[-_]?token$',
     r'^security[-_]?token$',
+    r'^sesskey$',  # Moodle
+    r'^seqtoken$',  # Various
+    r'^formkey$',  # Various
+    r'^form[-_]?key$',  # Various
+    r'^request[-_]?token$',  # Various
     
     # Generic patterns
     r'^token$',
@@ -107,6 +112,7 @@ CSRF_TOKEN_PATTERNS = [
     r'^state$',
     r'^verify$',
     r'^validation[-_]?token$',
+    r'^hash$',  # Some apps use this
 ]
 
 # Common CSRF header names
