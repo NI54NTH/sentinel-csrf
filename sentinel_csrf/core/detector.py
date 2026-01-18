@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sentinel_csrf.input.requests import HttpRequest
 from sentinel_csrf.input.cookies import Cookie
@@ -92,7 +92,7 @@ class CsrfFinding:
     recommendation: str = ""
     
     # Metadata
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))
     
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
