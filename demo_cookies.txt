@@ -1,0 +1,2 @@
+# Netscape HTTP Cookie File
+target.com	FALSE	/	FALSE	0	session	secr3t_s3ss10n_id

@@ -36,7 +36,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sentinel-csrf",
         description="Sentinel-CSRF: A verification-driven CSRF exploitation assistant",
-        epilog="For more information, see: https://github.com/sentinel-csrf/sentinel-csrf",
+        epilog="For more information, see: https://github.com/NI54NTH/sentinel-csrf",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     

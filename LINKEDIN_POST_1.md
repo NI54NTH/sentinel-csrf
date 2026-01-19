@@ -1,121 +1,26 @@
-# LinkedIn Post - Part 1: Introduction
+# LinkedIn Post - "The Personal Utility" Angle
 
----
+**Headline:** Why I built my own CSRF scanner (despite the trends).
 
-## POST COPY (Ready to paste)
+**Hook:** CSRF hasn't disappeared from the OWASP Top 10—it just moved. In 2025, it's now folded under **A01: Broken Access Control**. The risk isn't gone; it's just harder to spot, and for VAPT professionals, investigating false positives is still a major pain.
 
----
+**The Reality:**
+I built **Sentinel-CSRF** purely for my own workflow. I was tired of scanners flagging every "missing token" without checking if the browser's SameSite cookies or header validation would actually block the attack.
 
-🔒 **I Built a CSRF Scanner That Doesn't Lie**
+I needed a tool that prioritized **verification** over volume. One that answers "Can I actually exploit this?" before I put it in a report.
 
-Tired of CSRF scanners that flood your reports with false positives?
+**What Phase 1 (v1.0.7) Covers:**
+ 
 
-I built **Sentinel-CSRF** - a verification-driven CSRF exploitation assistant that reports only what it can PROVE exploitable.
+**What's Next?**
+Phase 2 is in development, focusing on complex JSON API and CORS analysis.
 
-**The Problem:**
-Traditional scanners flag "missing CSRF token" without checking:
-❌ SameSite cookies blocking attacks
-❌ Origin/Referer validation
-❌ Browser security features
+**Availability:**
+I'm deciding to open-source it in case others face the same fatigue with generic scanner noise.
 
-Result? 50%+ false positive rate.
+`pip install sentinel-csrf`
 
-**My Solution - 5-Phase Detection:**
-✅ State-change analysis
-✅ Token strength measurement
-✅ SameSite cookie analysis
-✅ Header validation checks
-✅ Browser feasibility matrix
+**Repository:**
+<https://github.com/NI54NTH/sentinel-csrf>
 
-**Only reports what browsers can actually exploit.**
-
-**Simple Commands:**
-
-```
-sentinel-csrf scan -R -C          # Scan with STDIN
-sentinel-csrf poc generate -R -o poc.html
-sentinel-csrf scan -L              # Reuse last
-```
-
-📦 **Install now:**
-
-```
-pip install sentinel-csrf
-```
-
-🔗 **Links:**
-
-- GitHub: github.com/NI54NTH/sentinel-csrf
-- PyPI: pypi.org/project/sentinel-csrf/
-
-This is Part 1 of my tool development series.
-Next: The detection pipeline explained.
-
-# CyberSecurity #BugBounty #Python #VAPT #OpenSource #Pentesting #AppSec #SecurityTools
-
----
-
-## HASHTAGS (copy separately if needed)
-
-# CyberSecurity #BugBounty #Python #VAPT #OpenSource #Pentesting #AppSec #SecurityTools #WebSecurity #CSRF #EthicalHacking #InfoSec
-
----
-
-## EVIDENCE SCREENSHOTS TO CAPTURE
-
-Since image generation is unavailable, take these screenshots yourself:
-
-### Screenshot 1: Tool Banner
-
-Run in terminal:
-
-```bash
-sentinel-csrf --help
-```
-
-Capture the ASCII banner and help output.
-
-### Screenshot 2: Scan Output
-
-Run:
-
-```bash
-sentinel-csrf scan -R -C
-# Paste a sample request and cookies
-```
-
-Capture the scan results showing findings.
-
-### Screenshot 3: PoC Generation
-
-Run:
-
-```bash
-sentinel-csrf poc generate -R -o poc.html -v form_post
-```
-
-Capture the PoC generation output.
-
-### Screenshot 4: PyPI Page
-
-Visit: <https://pypi.org/project/sentinel-csrf/>
-Capture the package page.
-
-### Screenshot 5: GitHub Repo
-
-Visit: <https://github.com/NI54NTH/sentinel-csrf>
-Capture the README with banner.
-
----
-
-## COVER IMAGE SUGGESTION
-
-Create a simple cover in Canva:
-
-- Dark background (black/navy)
-- "SENTINEL-CSRF" in large bold text
-- Subtitle: "CSRF Exploit Verification Tool"
-- Add shield icon or lock icon
-- Your name: "by N15H"
-
----
+# AppSec #VAPT #Python #SecurityTools #OffensiveSecurity
